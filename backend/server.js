@@ -19,6 +19,10 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-app.listen(PORT, () => {
-  console.log(`To-Do API listening on http://localhost:${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`To-Do API listening on http://localhost:${PORT}`);
+  });
+}
+
+export default app;
