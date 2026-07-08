@@ -1,6 +1,6 @@
 # To-Do App
 
-A full-stack to-do application with a React frontend and an Express backend.
+A full-stack to-do application: a React (Vite) frontend and a Vercel serverless API, deployed as a single zero-config Vercel project.
 
 ## Features
 
@@ -12,29 +12,32 @@ A full-stack to-do application with a React frontend and an Express backend.
 
 ```
 TO_DO/
-├── backend/    Express API (in-memory storage)
-└── frontend/   React app (Vite)
+├── api/            Serverless functions (Vercel Node runtime)
+│   ├── _store.js       shared in-memory store (not a route — underscore-prefixed)
+│   ├── health.js        GET  /api/health
+│   └── tasks/
+│       ├── index.js     GET/POST /api/tasks
+│       └── [id].js      PATCH/DELETE /api/tasks/:id
+├── src/            React app
+├── index.html
+└── vite.config.js
 ```
+
+There's no separate backend server or `vercel.json` — Vercel auto-detects the Vite frontend and the `api/` functions by convention.
 
 ## Getting Started
 
-### Backend
-
 ```bash
-cd backend
 npm install
-npm start        # runs on http://localhost:4000
+npm run dev       # frontend only, http://localhost:5173 (no working API)
 ```
 
-### Frontend
+To run the frontend and API together locally exactly as they behave in production, use the Vercel CLI instead:
 
 ```bash
-cd frontend
-npm install
-npm run dev       # runs on http://localhost:5173
+npm install -g vercel   # if you don't have it
+vercel dev              # serves the app + /api/* on one port
 ```
-
-The frontend dev server proxies `/api` requests to the backend, so run both at the same time.
 
 ## API Endpoints
 
@@ -47,16 +50,9 @@ The frontend dev server proxies `/api` requests to the backend, so run both at t
 
 ## Deploying to Vercel
 
-The repo ships with a root `vercel.json` that builds both halves of the app into one Vercel project:
-
-- `backend/server.js` is built with `@vercel/node` and exported as a serverless function (requests to `/api/*` are routed to it).
-- `frontend/` is built with `@vercel/static-build` (`vite build` → `frontend/dist`) and served as the static site.
-
-### Steps
-
 1. Push this repo to GitHub (already done if you're reading this on the deployed branch).
-2. In the [Vercel dashboard](https://vercel.com/new), import the repository. Leave **Root Directory** as the repo root — `vercel.json` handles the rest, no other project settings are required.
-3. Deploy. Vercel will run `npm install` + `vite build` for the frontend and bundle `backend/server.js` as a function.
+2. In the [Vercel dashboard](https://vercel.com/new), import the repository. No custom project settings are needed — Vercel detects Vite for the frontend and `api/*.js` as serverless functions automatically.
+3. Deploy.
 
 Or from the CLI, after `vercel login`:
 
@@ -67,4 +63,4 @@ vercel --prod # production deploy
 
 ### Important caveat: in-memory storage
 
-The backend stores tasks in a plain JS array (`backend/store.js`). That's fine for local dev, but on Vercel each API request may be served by a different, short-lived serverless instance — so **tasks can silently reset or fail to persist between requests**. This deployment is fine for demos/screenshots, but for real persistence you'd want to swap `store.js` for a real database (e.g. Vercel Postgres, Vercel KV, or any hosted DB) before relying on it day-to-day.
+`api/_store.js` keeps tasks in a plain JS array. That's fine for local dev, but on Vercel each API request may be served by a different, short-lived serverless instance — so **tasks can silently reset or fail to persist between requests**. This is fine for demos/screenshots, but for real persistence you'd want to swap `_store.js` for a real database (e.g. Vercel Postgres, Vercel KV, or any hosted DB) before relying on it day-to-day.
