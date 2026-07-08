@@ -50,7 +50,7 @@ export default function App() {
     <div className="app">
       <div className="app__card">
         <header className="app__header">
-          <h1>To-Do</h1>
+          <h1>My Tasks</h1>
           <p className="app__subtitle">Stay on top of what matters today.</p>
         </header>
 
