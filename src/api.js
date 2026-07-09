@@ -32,7 +32,7 @@ export function toggleTask(id, completed) {
 
 export function updateTask(id, changes) {
   return fetch(`${BASE_URL}/${id}`, {
-    method: 'PATCH',
+    method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(changes),
   }).then(handleResponse);
