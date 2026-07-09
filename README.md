@@ -44,8 +44,19 @@ vercel dev              # serves the app + /api/* on one port
 | ------ | ----------------- | -------------------------- |
 | GET    | `/api/tasks`       | List all tasks             |
 | POST   | `/api/tasks`       | Create a task (`{ title }`)|
-| PATCH  | `/api/tasks/:id`   | Update a task's title/completed status |
+| PUT    | `/api/tasks/:id`   | Toggle/set completed status (`{ completed }`) |
+| PATCH  | `/api/tasks/:id`   | Update a task's title and/or completed status |
 | DELETE | `/api/tasks/:id`   | Delete a task              |
+
+## Frontend → API wiring
+
+`src/api.js` is the only place that talks to the network (`fetch`, no extra HTTP client needed for an app this size). It reads the API's base URL from `VITE_API_URL` (see `.env.example`) — leave it unset for same-origin requests (correct for a normal Vercel deploy or `vercel dev`); set it only if the frontend and API are ever hosted on different origins. Because of that, the serverless functions also set CORS headers (`api/_cors.js`) and answer `OPTIONS` preflight requests.
+
+- `TaskForm` calls `createTask()` → `POST /api/tasks`.
+- `TaskList`/`App` load tasks via `fetchTasks()` → `GET /api/tasks`, with a loading state while the initial fetch is in flight and an error banner if it fails.
+- Checking a task off calls `toggleTask()` → `PUT /api/tasks/:id`; renaming a task calls `updateTask()` → `PATCH /api/tasks/:id`; both live in `App.jsx`'s `handleToggle`/`handleEdit`.
+- Deleting calls `deleteTask()` → `DELETE /api/tasks/:id`.
+- Every mutation (`handleAdd`/`handleToggle`/`handleEdit`/`handleDelete` in `App.jsx`) is wrapped in `try/catch`: on failure it sets the error banner *and* rethrows, so `TaskForm` keeps your typed text instead of clearing it, and `TaskItem` stays in edit mode instead of silently discarding your edit.
 
 ## Deploying to Vercel
 

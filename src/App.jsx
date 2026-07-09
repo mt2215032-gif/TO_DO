@@ -24,23 +24,47 @@ export default function App() {
   }, []);
 
   async function handleAdd(title) {
-    const task = await api.createTask(title);
-    setTasks((prev) => [...prev, task]);
+    setError(null);
+    try {
+      const task = await api.createTask(title);
+      setTasks((prev) => [...prev, task]);
+    } catch (err) {
+      setError(err.message || 'Could not add task.');
+      throw err;
+    }
   }
 
   async function handleToggle(id, completed) {
-    const updated = await api.updateTask(id, { completed });
-    setTasks((prev) => prev.map((task) => (task.id === id ? updated : task)));
+    setError(null);
+    try {
+      const updated = await api.toggleTask(id, completed);
+      setTasks((prev) => prev.map((task) => (task.id === id ? updated : task)));
+    } catch (err) {
+      setError(err.message || 'Could not update task.');
+      throw err;
+    }
   }
 
   async function handleEdit(id, title) {
-    const updated = await api.updateTask(id, { title });
-    setTasks((prev) => prev.map((task) => (task.id === id ? updated : task)));
+    setError(null);
+    try {
+      const updated = await api.updateTask(id, { title });
+      setTasks((prev) => prev.map((task) => (task.id === id ? updated : task)));
+    } catch (err) {
+      setError(err.message || 'Could not edit task.');
+      throw err;
+    }
   }
 
   async function handleDelete(id) {
-    await api.deleteTask(id);
-    setTasks((prev) => prev.filter((task) => task.id !== id));
+    setError(null);
+    try {
+      await api.deleteTask(id);
+      setTasks((prev) => prev.filter((task) => task.id !== id));
+    } catch (err) {
+      setError(err.message || 'Could not delete task.');
+      throw err;
+    }
   }
 
   const visibleTasks = useMemo(() => tasks.filter(FILTERS[filter]), [tasks, filter]);

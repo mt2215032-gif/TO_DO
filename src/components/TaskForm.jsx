@@ -13,6 +13,8 @@ export default function TaskForm({ onAdd }) {
     try {
       await onAdd(trimmed);
       setTitle('');
+    } catch {
+      // failure is surfaced via the app-level error banner; keep the draft so the user can retry
     } finally {
       setSubmitting(false);
     }

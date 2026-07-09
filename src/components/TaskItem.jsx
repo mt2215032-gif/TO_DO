@@ -18,7 +18,11 @@ export default function TaskItem({ task, onToggle, onEdit, onDelete }) {
     const trimmed = draft.trim();
     if (!trimmed) return;
     if (trimmed !== task.title) {
-      await onEdit(task.id, trimmed);
+      try {
+        await onEdit(task.id, trimmed);
+      } catch {
+        return; // keep editing open; the failure is surfaced via the app-level error banner
+      }
     }
     setIsEditing(false);
   }
@@ -34,7 +38,7 @@ export default function TaskItem({ task, onToggle, onEdit, onDelete }) {
         <input
           type="checkbox"
           checked={task.completed}
-          onChange={() => onToggle(task.id, !task.completed)}
+          onChange={() => onToggle(task.id, !task.completed).catch(() => {})}
         />
         <span className="task-item__checkmark" />
       </label>
@@ -67,7 +71,7 @@ export default function TaskItem({ task, onToggle, onEdit, onDelete }) {
         )}
         <button
           className="task-item__btn task-item__btn--danger"
-          onClick={() => onDelete(task.id)}
+          onClick={() => onDelete(task.id).catch(() => {})}
           aria-label="Delete task"
         >
           Delete
