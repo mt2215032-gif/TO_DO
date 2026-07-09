@@ -13,15 +13,30 @@ A full-stack to-do application: a React (Vite) frontend and an Express API, depl
 ```
 TO_DO/
 ├── api/
-│   ├── _store.js        shared in-memory store (not a route — underscore-prefixed)
+│   ├── _supabase.js      Supabase client (reads SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY)
 │   └── index.js          Express app (all routes + error handling)
+├── supabase/
+│   └── schema.sql         run once in the Supabase SQL editor to create the tasks table
 ├── src/                 React app
 ├── index.html
 ├── vite.config.js
 └── vercel.json          rewrites /api/:path* -> /api (routes every /api/* request to api/index.js)
 ```
 
-The whole API is one Express app in `api/index.js`, exported as the default handler — Vercel runs an exported Express app directly as a serverless function. It's deliberately kept as a *single* function (not split into one file per route): Vercel bundles each API file as an independent function with its own module state, so if routes lived in separate files they'd each get a separate copy of the in-memory store — a task you just created or loaded would 404 when you tried to update or delete it. `vercel.json` only defines `rewrites` (not `builds`), so it doesn't disable Vercel's zero-config project detection.
+The whole API is one Express app in `api/index.js`, exported as the default handler — Vercel runs an exported Express app directly as a serverless function. It's deliberately kept as a *single* function (not split into one file per route): Vercel bundles each API file as an independent function, and splitting routes across files caused real bugs earlier in this project. `vercel.json` only defines `rewrites` (not `builds`), so it doesn't disable Vercel's zero-config project detection.
+
+Data is stored in Postgres via Supabase (see **Database setup** below) instead of in-memory, so it now survives cold starts and redeploys.
+
+## Database setup (Supabase)
+
+1. Create a project at [supabase.com](https://supabase.com) if you don't have one.
+2. Open **SQL Editor** in the Supabase dashboard, paste in `supabase/schema.sql`, and run it. This creates the `tasks` table (`id bigint identity`, `text`, `completed`, `created_at`) with RLS enabled and no policies — the anon key gets no access, only the service role key (used server-side below) can reach it — and seeds the three starter tasks.
+3. In **Settings -> API**, copy the **Project URL** and the **`service_role` secret key** (not the `anon` key — the server needs full access, and RLS blocks the anon key by design).
+4. Set both as environment variables:
+   - **Locally**: create a `.env` file (see `.env.example`) with `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
+   - **On Vercel**: add the same two variables in Project Settings -> Environment Variables, then redeploy.
+
+`SUPABASE_SERVICE_ROLE_KEY` is a secret with full table access — never prefix it with `VITE_` (that would ship it to the browser) and never commit a `.env` file containing it (`.gitignore` already excludes `.env`).
 
 ## Getting Started
 
@@ -30,13 +45,14 @@ npm install
 npm run dev       # frontend only, http://localhost:5173 (no working API)
 ```
 
-To run the API locally:
+To run the API locally (after completing **Database setup** above):
 
 ```bash
 node api/index.js   # http://localhost:4000 — app.listen only runs when NOT on Vercel
+                     # requires SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY to be set in your shell
 ```
 
-Then point the frontend at it with `VITE_API_URL=http://localhost:4000` (see `.env.example`), or use the Vercel CLI to run both together on one port exactly as in production:
+Then point the frontend at it with `VITE_API_URL=http://localhost:4000` (see `.env.example`), or use the Vercel CLI to run both together on one port exactly as in production (it also loads `.env` automatically, for both the frontend and the API):
 
 ```bash
 npm install -g vercel   # if you don't have it
@@ -55,10 +71,11 @@ vercel dev
 
 ### Error handling
 
-- Invalid input (empty title, empty title on rename) → `400`
-- Updating/deleting an ID that doesn't exist → `404`
+- Invalid input (empty title, empty title on rename, no fields on update) → `400`
+- Updating/deleting an ID that doesn't exist → `404` (checked via Supabase's `.maybeSingle()`, not by parsing PostgREST error codes)
 - Any other unmatched route under `/api` → `404`
-- Malformed JSON request body, or anything thrown inside a route handler → caught by a centralized Express error-handling middleware and returned as a clean `400`/`500` JSON response instead of crashing the function
+- Malformed JSON request body, a Supabase/network error, or anything else thrown inside a route handler → caught by a centralized Express error-handling middleware and returned as a clean `400`/`500` JSON response instead of crashing the function. Verified this directly: pointed the API at an unreachable Supabase URL and confirmed requests fail with a clean `500` while the server stays up and `/api/health` keeps responding.
+- Missing `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` fails fast with a clear startup error instead of a cryptic one at request time.
 
 ## Frontend → API wiring
 
@@ -83,6 +100,6 @@ vercel        # preview deploy
 vercel --prod # production deploy
 ```
 
-### Important caveat: in-memory storage
+### Storage
 
-`api/_store.js` keeps tasks in a plain JS array. That's fine for local dev, and since the whole API is one function instance, it also works reliably within a single warm session in production. But **a cold start (the function spinning up fresh, e.g. after a period of inactivity or during a traffic spike) resets the store back to the three seed tasks**. This is fine for demos/screenshots, but for real persistence you'd want to swap `_store.js` for a real database (e.g. Vercel Postgres, Vercel KV, or any hosted DB) before relying on it day-to-day.
+Tasks are stored in Postgres via Supabase (`supabase/schema.sql`), not in-memory — data now survives cold starts, redeploys, and traffic spikes. See **Database setup** above for the one-time setup. Both `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` must be set wherever the API runs (locally and on Vercel) or every request will fail with a clear startup error.
