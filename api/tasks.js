@@ -1,10 +1,14 @@
 import { getAll, create, update, remove } from './_store.js';
+import { applyCors, handlePreflight } from './_cors.js';
 
 export default function handler(req, res) {
+  if (handlePreflight(req, res)) return;
+  applyCors(req, res);
+
   const { id } = req.query;
 
   if (id) {
-    if (req.method === 'PATCH') {
+    if (req.method === 'PUT' || req.method === 'PATCH') {
       const { title, completed } = req.body || {};
       if (title !== undefined && !title.trim()) {
         return res.status(400).json({ error: 'Title cannot be empty' });
@@ -24,7 +28,7 @@ export default function handler(req, res) {
       return res.status(204).end();
     }
 
-    res.setHeader('Allow', 'PATCH, DELETE');
+    res.setHeader('Allow', 'PUT, PATCH, DELETE');
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
