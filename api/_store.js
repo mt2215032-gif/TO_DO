@@ -1,9 +1,9 @@
-import { nanoid } from 'nanoid';
+import { randomUUID } from 'node:crypto';
 
 let tasks = [
-  { id: nanoid(), title: 'Welcome to your To-Do app', completed: false, createdAt: Date.now() },
-  { id: nanoid(), title: 'Click the checkbox to complete a task', completed: false, createdAt: Date.now() },
-  { id: nanoid(), title: 'Try editing or deleting this task', completed: true, createdAt: Date.now() },
+  { id: randomUUID(), title: 'Welcome to your To-Do app', completed: false, createdAt: Date.now() },
+  { id: randomUUID(), title: 'Click the checkbox to complete a task', completed: false, createdAt: Date.now() },
+  { id: randomUUID(), title: 'Try editing or deleting this task', completed: true, createdAt: Date.now() },
 ];
 
 export function getAll() {
@@ -15,7 +15,7 @@ export function getById(id) {
 }
 
 export function create(title) {
-  const task = { id: nanoid(), title, completed: false, createdAt: Date.now() };
+  const task = { id: randomUUID(), title, completed: false, createdAt: Date.now() };
   tasks.push(task);
   return task;
 }

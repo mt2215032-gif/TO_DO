@@ -1,17 +1,17 @@
 :root {
-  --bg-gradient-start: #eef2ff;
-  --bg-gradient-end: #f8fafc;
+  --bg-gradient-start: #e0f2fe;
+  --bg-gradient-end: #f0f9ff;
   --card-bg: #ffffff;
-  --text-primary: #1e2233;
-  --text-secondary: #6b7280;
-  --accent: #6366f1;
-  --accent-hover: #4f46e5;
-  --border: #e5e7eb;
+  --text-primary: #0c2f4a;
+  --text-secondary: #5b7a90;
+  --accent: #0ea5e9;
+  --accent-hover: #0284c7;
+  --accent-soft: #e0f2fe;
+  --border: #cfe8f7;
   --danger: #ef4444;
   --danger-hover: #dc2626;
-  --success: #22c55e;
-  --radius: 14px;
-  --shadow: 0 20px 40px -12px rgba(30, 34, 51, 0.15);
+  --radius: 16px;
+  --shadow: 0 20px 40px -12px rgba(14, 116, 144, 0.18);
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
@@ -48,6 +48,7 @@ body {
   font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.02em;
+  color: var(--accent-hover);
 }
 
 .app__subtitle {
@@ -77,21 +78,22 @@ body {
 .task-form__input {
   flex: 1;
   padding: 12px 14px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid var(--border);
   font-size: 15px;
   outline: none;
+  background: #f8fcff;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .task-form__input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.18);
 }
 
 .task-form__button {
-  padding: 12px 18px;
-  border-radius: 10px;
+  padding: 12px 20px;
+  border-radius: 12px;
   border: none;
   background: var(--accent);
   color: #fff;
@@ -122,16 +124,16 @@ body {
 .app__filters {
   display: flex;
   gap: 6px;
-  background: #f3f4f6;
+  background: var(--accent-soft);
   padding: 4px;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .app__filter-btn {
   border: none;
   background: transparent;
-  padding: 6px 12px;
-  border-radius: 8px;
+  padding: 6px 14px;
+  border-radius: 9px;
   font-size: 13px;
   font-weight: 500;
   color: var(--text-secondary);
@@ -140,9 +142,9 @@ body {
 }
 
 .app__filter-btn--active {
-  background: #fff;
-  color: var(--text-primary);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(14, 165, 233, 0.35);
 }
 
 .app__count {
@@ -172,13 +174,13 @@ body {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid var(--border);
   transition: background 0.15s ease;
 }
 
 .task-item:hover {
-  background: #f9fafb;
+  background: #f2fafe;
 }
 
 .task-item--completed .task-item__title {
@@ -204,15 +206,15 @@ body {
 .task-item__checkmark {
   width: 20px;
   height: 20px;
-  border-radius: 6px;
+  border-radius: 7px;
   border: 2px solid var(--border);
   display: inline-block;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .task-item__checkbox input:checked + .task-item__checkmark {
-  background: var(--success);
-  border-color: var(--success);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .task-item__title {
@@ -225,7 +227,7 @@ body {
 .task-item__edit-input {
   flex: 1;
   padding: 6px 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--accent);
   font-size: 15px;
   outline: none;
@@ -251,13 +253,13 @@ body {
   font-weight: 500;
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .task-item__btn:hover {
-  background: #eef2ff;
-  color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-hover);
 }
 
 .task-item__btn--danger:hover {

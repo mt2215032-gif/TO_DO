@@ -29,7 +29,7 @@ export default function TaskForm({ onAdd }) {
         aria-label="New task title"
       />
       <button type="submit" className="task-form__button" disabled={!title.trim() || submitting}>
-        Add Task
+        Add
       </button>
     </form>
   );
