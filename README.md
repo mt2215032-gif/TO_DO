@@ -12,18 +12,17 @@ A full-stack to-do application: a React (Vite) frontend and a Vercel serverless 
 
 ```
 TO_DO/
-├── api/            Serverless functions (Vercel Node runtime)
-│   ├── _store.js       shared in-memory store (not a route — underscore-prefixed)
-│   ├── health.js        GET  /api/health
-│   └── tasks/
-│       ├── index.js     GET/POST /api/tasks
-│       └── [id].js      PATCH/DELETE /api/tasks/:id
-├── src/            React app
+├── api/                 Serverless functions (Vercel Node runtime)
+│   ├── _store.js            shared in-memory store (not a route — underscore-prefixed)
+│   ├── health.js            GET /api/health
+│   └── tasks.js             GET/POST /api/tasks, PATCH/DELETE /api/tasks/:id
+├── src/                 React app
 ├── index.html
-└── vite.config.js
+├── vite.config.js
+└── vercel.json          rewrites /api/tasks/:id -> /api/tasks?id=:id
 ```
 
-There's no separate backend server or `vercel.json` — Vercel auto-detects the Vite frontend and the `api/` functions by convention.
+`/api/tasks` and `/api/tasks/:id` are handled by the **same** serverless function (`api/tasks.js`), routed there via the rewrite in `vercel.json`. This is intentional: Vercel bundles each API file as an independent function with its own module state, so if list/create and update/delete lived in separate files, they would each get a **separate copy** of the in-memory store — meaning a task you just created or loaded would 404 when you tried to complete or delete it. Keeping them in one file means they share the same in-memory data while the function instance is warm. The `vercel.json` here only defines `rewrites`, not `builds`, so it doesn't disable Vercel's zero-config project detection.
 
 ## Getting Started
 
@@ -63,4 +62,4 @@ vercel --prod # production deploy
 
 ### Important caveat: in-memory storage
 
-`api/_store.js` keeps tasks in a plain JS array. That's fine for local dev, but on Vercel each API request may be served by a different, short-lived serverless instance — so **tasks can silently reset or fail to persist between requests**. This is fine for demos/screenshots, but for real persistence you'd want to swap `_store.js` for a real database (e.g. Vercel Postgres, Vercel KV, or any hosted DB) before relying on it day-to-day.
+`api/_store.js` keeps tasks in a plain JS array. That's fine for local dev, and since all task routes now share one function instance, it also works reliably within a single warm session in production. But **a cold start (the function spinning up fresh, e.g. after a period of inactivity or during a traffic spike) resets the store back to the three seed tasks**. This is fine for demos/screenshots, but for real persistence you'd want to swap `_store.js` for a real database (e.g. Vercel Postgres, Vercel KV, or any hosted DB) before relying on it day-to-day.
