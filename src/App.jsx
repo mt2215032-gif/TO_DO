@@ -13,14 +13,21 @@ export default function App() {
   const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  function loadTasks() {
+    setLoading(true);
+    setLoadError(null);
     api
       .fetchTasks()
       .then(setTasks)
-      .catch(() => setError('Could not load tasks. Is the API running?'))
+      .catch((err) => setLoadError(err.message || 'Could not load tasks. Is the API running?'))
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    loadTasks();
   }, []);
 
   async function handleAdd(title) {
@@ -80,25 +87,46 @@ export default function App() {
 
         <TaskForm onAdd={handleAdd} />
 
-        {error && <p className="app__error">{error}</p>}
+        {error && (
+          <p className="app__error">
+            {error}
+            <button
+              type="button"
+              className="app__error-dismiss"
+              onClick={() => setError(null)}
+              aria-label="Dismiss error"
+            >
+              &times;
+            </button>
+          </p>
+        )}
 
-        <div className="app__toolbar">
-          <div className="app__filters">
-            {Object.keys(FILTERS).map((key) => (
-              <button
-                key={key}
-                className={`app__filter-btn ${filter === key ? 'app__filter-btn--active' : ''}`}
-                onClick={() => setFilter(key)}
-              >
-                {key.charAt(0).toUpperCase() + key.slice(1)}
-              </button>
-            ))}
+        {!loadError && (
+          <div className="app__toolbar">
+            <div className="app__filters">
+              {Object.keys(FILTERS).map((key) => (
+                <button
+                  key={key}
+                  className={`app__filter-btn ${filter === key ? 'app__filter-btn--active' : ''}`}
+                  onClick={() => setFilter(key)}
+                >
+                  {key.charAt(0).toUpperCase() + key.slice(1)}
+                </button>
+              ))}
+            </div>
+            <span className="app__count">{remaining} remaining</span>
           </div>
-          <span className="app__count">{remaining} remaining</span>
-        </div>
+        )}
 
         {loading ? (
           <p className="app__loading">Loading tasks...</p>
+        ) : loadError ? (
+          <div className="app__load-error">
+            <p>{loadError}</p>
+            <button type="button" className="app__retry-btn" onClick={loadTasks}>
+              Retry
+            </button>
+          </div>
         ) : (
           <TaskList
             tasks={visibleTasks}

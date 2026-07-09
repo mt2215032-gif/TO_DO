@@ -58,14 +58,58 @@ body {
 }
 
 .app__error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   color: var(--danger);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 10px 12px;
   font-size: 14px;
-  margin: -8px 0 16px;
+  margin: -4px 0 16px;
+}
+
+.app__error-dismiss {
+  border: none;
+  background: transparent;
+  color: var(--danger);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
 }
 
 .app__loading {
   color: var(--text-secondary);
   font-size: 14px;
+}
+
+.app__load-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  padding: 32px 0;
+  text-align: center;
+}
+
+.app__retry-btn {
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.app__retry-btn:hover {
+  background: var(--accent-hover);
 }
 
 /* Task form */
