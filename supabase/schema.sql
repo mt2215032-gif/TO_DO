@@ -14,9 +14,12 @@ create table if not exists tasks (
 alter table tasks enable row level security;
 
 -- Optional: seed the same three starter tasks the previous in-memory
--- version shipped with.
+-- version shipped with. Guarded so re-running this script (e.g. after an
+-- earlier run partially failed) doesn't insert duplicates.
 insert into tasks (text, completed)
-values
+select * from (values
   ('Welcome to your To-Do app', false),
   ('Click the checkbox to complete a task', false),
-  ('Try editing or deleting this task', true);
+  ('Try editing or deleting this task', true)
+) as seed(text, completed)
+where not exists (select 1 from tasks);
